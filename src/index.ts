@@ -12,28 +12,27 @@ const dbHost = process.env.DB_HOST;
 const dbUser = process.env.DB_USER;
 const dbPass = process.env.DB_PASS;
 const dbName = process.env.DB_NAME;
+const planetScaleConnString = process.env.PS_URL;
 
 // choose to connect to PlanetScale or to a local DB (I think that PlanetScale would be a good place to start out, and then a larger DB would be good as a proof of concept for handling large tables.)
-const local = false; // false = PS
 
-const createConnection = () => {
-	if (local) {
-		const access: ConnectionOptions = {
-			host: dbHost,
-			user: dbUser,
-			password: dbPass,
-			database: dbName,
-		};
-		return mysql.createConnection(access);
-	} else {
-		if (process.env.PS_URL) {
-			return mysql.createConnection(process.env.PS_URL);
-		} else {
-			console.log('process.env.PS_URL did not exist');
-		}
+const localConnection = () => {
+	const access: ConnectionOptions = {
+		host: dbHost,
+		user: dbUser,
+		password: dbPass,
+		database: dbName,
+	};
+	return mysql.createConnection(access);
+};
+
+const remoteConnection = () => {
+	if (planetScaleConnString) {
+		return mysql.createConnection(planetScaleConnString);
 	}
 };
-const conn = createConnection();
+
+const conn: Connection | undefined = remoteConnection();
 console.log(conn);
 
 // if there is a connection, we can go ahead to the simulation:
